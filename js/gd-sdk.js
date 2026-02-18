@@ -219,6 +219,21 @@ function gdReady() {
 }
 
 /**
+ * Ensure URL uses http:// instead of https://
+ * - If URL starts with "https://" (case-insensitive), replace with "http://"
+ * - If URL starts with "http://" or has no protocol, return unchanged
+ * - Non-string inputs are returned unchanged
+ */
+function forceHttp(url) {
+    if (typeof url !== 'string') return url;
+    const str = url.trim();
+    if (/^https:\/\//i.test(str)) {
+        return str.replace(/^https:\/\//i, 'http://');
+    }
+    return str;
+}
+
+/**
  * Show Interstitial Ad (non-rewarded)
  * Pauses game, shows ad, resumes game
  */
