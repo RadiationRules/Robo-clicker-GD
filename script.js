@@ -1,3 +1,22 @@
+// SDK shim: neutralize any removed SDK integrations so existing game code
+// can continue to call the same API without performing network calls.
+if (typeof window !== 'undefined' && !window.CrazyManager) {
+    window.CrazyManager = {
+        init: async () => true,
+        hasAdblock: async () => false,
+        loadingStop: () => {},
+        gameplayStart: () => {},
+        gameplayStop: () => {},
+        requestResponsiveBanner: async () => {},
+        requestBanner: async () => {},
+        clearAllBanners: () => {},
+        showRewardedAd: async () => {},
+        happytime: () => {},
+        resetProgress: async () => {},
+        saveData: async () => {},
+        loadData: async () => null
+    };
+}
 
 const ROBOT_TIERS = [
     { name: "Prototype X-1", multiplier: 1, class: "tier-0", desc: "Basic clicker unit.", rarity: "Common" },
@@ -235,7 +254,19 @@ class RoboClicker {
     async init() {
         console.log("Initializing Robo Clicker Elite...");
 
+        // --- CrazyGames SDK Manager Initialization ---
+        if (window.CrazyManager) {
+            await window.CrazyManager.init();
+            
+            // Force a small delay to ensure SDK Init event is logged first
+            await new Promise(resolve => setTimeout(resolve, 500));
 
+            // Ad Block Check
+            const hasAdblock = await window.CrazyManager.hasAdblock();
+            if (hasAdblock) {
+                console.warn("Adblock detected!");
+            }
+        }
         
         this.cacheDOM();
         this.initAudio();
@@ -283,6 +314,20 @@ class RoboClicker {
         // Tutorial Check
         if (this.gameState.totalBotsDeployed === 0) {
             this.initTutorial();
+        }
+        
+        // Signal Gameplay Start to SDK
+        if (window.CrazyManager) {
+            // 1. Stop Loading (Assets loaded)
+            window.CrazyManager.loadingStop();
+            
+            // 2. Start Gameplay
+            window.CrazyManager.gameplayStart();
+            
+            // --- NEW: Request Banners ---
+            // Request responsive banners for both slots
+            window.CrazyManager.requestResponsiveBanner('banner-container-top');
+            window.CrazyManager.requestResponsiveBanner('banner-container-bottom');
         }
     }
     
@@ -2341,28 +2386,11 @@ class RoboClicker {
         }
 
         this.adManager.requestedType = type;
+        console.log(`[AdManager] Granting reward for: ${type} (No Ad)`);
         
-        // Try to show GameDistribution rewarded ad
-        if (typeof showRewardedAd === 'function') {
-            console.log(`[Game] Requesting rewarded ad for: ${type}`);
-            showRewardedAd((success) => {
-                if (success) {
-                    console.log(`[Game] Ad reward granted for: ${type}`);
-                    this.grantReward(type);
-                    if (callbacks.onFinish) callbacks.onFinish();
-                } else {
-                    console.log(`[Game] Ad was skipped or unavailable for: ${type}`);
-                    // Fallback: grant reward anyway (optional)
-                    this.grantReward(type);
-                    if (callbacks.onFinish) callbacks.onFinish();
-                }
-            });
-        } else {
-            // Fallback if SDK wrapper not loaded
-            console.log(`[Game] GD SDK not available, granting reward directly for: ${type}`);
-            this.grantReward(type);
-            if (callbacks.onFinish) callbacks.onFinish();
-        }
+        // Direct Grant (No Ad System)
+        this.grantReward(type);
+        if (callbacks.onFinish) callbacks.onFinish();
     }
 
     // Alias for HTML onclicks
@@ -2373,23 +2401,19 @@ class RoboClicker {
     // --- ADS & BONUSES ---
 
     stopGameplay() {
-        // Set pause flag
-        window.__gamePaused = true;
-        
         // Mute Audio
         if (this.audioCtx && this.audioCtx.state === 'running') {
             this.audioCtx.suspend();
         }
+        // CrazyManager handles SDK gameplayStop
     }
 
     resumeGameplay() {
-        // Clear pause flag
-        window.__gamePaused = false;
-        
         // Unmute Audio
         if (this.audioCtx && this.audioCtx.state === 'suspended') {
             this.audioCtx.resume();
         }
+        // CrazyManager handles SDK gameplayStart
     }
 
     startAdCooldown(type) {
@@ -3433,6 +3457,8 @@ class RoboClicker {
         if (evoClaimBtn) {
             evoClaimBtn.addEventListener('click', () => {
                 this.toggleModal('evolution-modal', false);
+                // Happy Time! (Evolution Complete)
+                if (window.CrazyManager) window.CrazyManager.happytime();
             });
         }
 
@@ -3472,10 +3498,15 @@ class RoboClicker {
             // FULL NUCLEAR RESET
             this.isHardReset = true; // Prevent auto-save from overriding
             
-            // Clear all local data
-            localStorage.clear();
-            sessionStorage.clear();
-            location.reload();
+            // Use SDK Manager for unified reset
+            if (window.CrazyManager) {
+                await window.CrazyManager.resetProgress('roboClickerElite');
+            } else {
+                // Fallback if Manager missing (shouldn't happen)
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
         });
 
         this.els.confirmNoBtn.addEventListener('click', () => {
@@ -4077,11 +4108,39 @@ class RoboClicker {
         this.gameState.lastSave = Date.now();
         const json = JSON.stringify(this.gameState);
         localStorage.setItem('roboClickerElite', json);
+        
+        // Cloud Save via Manager
+        if (window.CrazyManager) {
+            await window.CrazyManager.saveData('roboClickerElite', this.gameState);
+        }
     }
 
     async loadGame() {
         let save = localStorage.getItem('roboClickerElite');
         
+        // Cloud Load via Manager
+        if (window.CrazyManager) {
+            try {
+                const cloudData = await window.CrazyManager.loadData('roboClickerElite');
+                if (cloudData) {
+                    const localData = save ? JSON.parse(save) : null;
+                    
+                    // Use Cloud if Local is missing OR Cloud is newer
+                    if (!localData || (cloudData.lastSave > (localData.lastSave || 0))) {
+                        console.log("Using Cloud Save");
+                        // We already have the object, so we can use it directly or stringify to match existing logic
+                        // Let's use it directly to avoid double parse
+                        this.processSaveData(cloudData);
+                        return; 
+                    } else {
+                        console.log("Using Local Save (Newer)");
+                    }
+                }
+            } catch (e) {
+                console.error("Cloud Load Error:", e);
+            }
+        }
+
         if (save) {
             try {
                 const data = JSON.parse(save);

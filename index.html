@@ -1,20 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robo Clicker - Elite Edition</title>
-    
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Robo Clicker</title>
+    <meta name="description" content="Evolve Your Robot, Deploy Drones, And Build Your Ultimate Robo Factory!">
+    <meta property="og:title" content="Robo Clicker">
+    <meta property="og:description" content="Evolve Your Robot, Deploy Drones, And Build Your Ultimate Robo Factory!">
+    <link rel="icon" href="favicon.ico">
+
+    <!-- FontAwesome for Real Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- Favicon: local fallback and inline SVG fallback for GitHub Pages / missing file -->
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%238e44ad'/%3E%3Ctext x='50' y='62' font-size='60' text-anchor='middle' fill='white' font-family='Fredoka One, sans-serif'%3ER%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 
     <!-- GAME OVERLAY (Modal Background) -->
     <div class="animated-bg">
@@ -545,63 +546,5 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="js/gd-sdk.js"></script>
-
-    <!-- GameDistribution SDK -->
-    <script>
-        window.GD_OPTIONS = {
-            gameId: "YOUR_GAME_ID_HERE",
-            advertisementSettings: {
-                autoplay: false
-            },
-            onEvent: function(event) {
-                switch (event.name) {
-                    case "SDK_READY":
-                        console.log("GD SDK Ready");
-                        window.GD_SDK_READY = true;
-                        break;
-
-                    case "SDK_GAME_START":
-                        console.log("Resume game requested");
-                        if (window.resumeGame) window.resumeGame();
-                        break;
-
-                    case "SDK_GAME_PAUSE":
-                        console.log("Pause game requested");
-                        if (window.pauseGame) window.pauseGame();
-                        break;
-
-                    case "SDK_REWARDED_WATCH_COMPLETE":
-                        console.log("Reward earned");
-                        if (window.__gd_reward_callback)
-                            window.__gd_reward_callback(true);
-                        break;
-
-                    case "SDK_REWARDED_WATCH_CANCELED":
-                        console.log("Reward canceled");
-                        if (window.__gd_reward_callback)
-                            window.__gd_reward_callback(false);
-                        break;
-
-                    case "SDK_GDPR_TRACKING":
-                        console.log("GDPR tracking:", event);
-                        break;
-
-                    case "SDK_GDPR_TARGETING":
-                        console.log("GDPR targeting:", event);
-                        break;
-                }
-            }
-        };
-
-        (function(d, s, id){
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s);
-            js.id = id;
-            js.src = "//html5.api.gamedistribution.com/main.min.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, "script", "gamedistribution-jssdk"));
-    </script>
 </body>
 </html>
