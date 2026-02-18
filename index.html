@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robo Clicker - Elite Edition</title>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- GAME OVERLAY (Modal Background) -->
+    <div class="animated-bg">
+        <div class="bg-grid"></div>
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+    </div>
+    
+    <!-- BANNER AD (Top) - Responsive -->
+    <div class="banner-container-top" id="banner-container-top"></div>
+
+    <!-- REBIRTH OVERLAY -->
+    <div id="rebirth-overlay">
+        <div class="rebirth-title-anim">REBIRTH SUCCESS!</div>
+        <div class="rebirth-sub-anim">MULTIPLIER INCREASED TO</div>
+        <div id="rebirth-mult-display" class="rebirth-mult-anim">2X</div>
+    </div>
+
+    <div class="game-wrapper">
+        <!-- HUD -->
+        <div class="top-hud">
+            <div class="stats-group">
+                <div class="currency-container" id="money-display-container">
+                    <div class="currency-icon-wrapper">$</div>
+                    <span id="money-count">0</span>
+                </div>
+                <div class="currency-container" id="gems-display-container" style="border-color: #9b59b6; color: #9b59b6; background: #fbf2ff;">
+                    <div class="currency-icon-wrapper" style="background: #9b59b6; color: white;">💎</div>
+                    <span id="gems-count">0</span>
+                </div>
+                <div class="stat-pill multiplier-pill">
+                    <span class="icon-sm"><i class="fa-solid fa-bolt"></i></span>
+                    <span id="multiplier-stat">1x</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="icon-sm"><i class="fa-solid fa-arrow-pointer"></i></span>
+                    <span id="bot-value-stat">1</span>
+                </div>
+            </div>
+
+            <div class="hud-controls">
+                <button id="daily-reward-btn" class="icon-btn" title="Daily Rewards" style="border-color: #9b59b6; color: #9b59b6; position: relative;">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <div id="daily-badge" class="notification-badge hidden">!</div>
+                </button>
+                <button id="boss-btn" class="icon-btn" title="Boss Battle" style="border-color: #ff4757; color: #ff4757;">
+                    <i class="fa-solid fa-skull"></i>
+                </button>
+                <button id="index-btn" class="icon-btn" title="Robot Index">
+                    <i class="fa-solid fa-book-open"></i>
+                    <div id="index-badge" class="notification-badge hidden">!</div>
+                </button>
+                <button id="settings-btn" class="icon-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="main-stage">
+            
+            <!-- HEAT SYSTEM MOVED INSIDE CLICK PAD -->
+            <div class="hero-section">
+                
+                <!-- TURBO OVERLAY UI -->
+                <div id="turbo-overlay" class="hidden">
+                    <div class="turbo-text">TURBO MODE</div>
+                    <div class="turbo-timer" id="turbo-timer">00:00</div>
+                </div>
+
+                <!-- BOTSWARM OVERLAY UI -->
+                <div id="botswarm-overlay" class="hidden">
+                    <div class="botswarm-text">AUTO!</div>
+                    <div class="botswarm-timer" id="botswarm-timer">00:00</div>
+                </div>
+                
+                <!-- Evolution Gauge - Addictive Design -->
+                <div class="fusion-container">
+                    <div class="fusion-label">
+                        <span>Evolution Progress</span>
+                        <span id="evo-percent">0%</span>
+                    </div>
+                    <div class="fusion-track">
+                        <div id="fusion-fill" class="fusion-fill"></div>
+                    </div>
+                    <div id="next-evo-mult" class="evo-target-mult">2X</div>
+                    <div id="next-evo-preview" class="next-evo-target">
+                        <div class="evo-target-icon">🔒</div>
+                        <div class="evo-target-info">
+                            <div class="evo-target-label">NEXT GOAL</div>
+                            <div class="evo-target-name">NANO BOT</div>
+                        </div>
+                    </div>
+                    
+                    <!-- IDLE PROMPT (Appears after 10s inactivity) -->
+                    <div id="idle-prompt" class="idle-prompt hidden">Click Robot to Evolve!</div>
+                </div>
+
+                <!-- Click Area -->
+                <div class="click-pad">
+                    <!-- HEAT SYSTEM (Energy Core) -->
+                    <div class="heat-system">
+                        <div class="heat-multiplier-text" id="heat-mult-text">2X</div>
+                        <div class="heat-bulb" id="heat-bulb"></div>
+                        <div class="heat-core-frame">
+                            <div class="heat-segment"></div>
+                            <div class="heat-segment"></div>
+                            <div class="heat-segment"></div>
+                            <div id="heat-fill-bar" class="heat-fill-bar"></div>
+                            <div class="heat-lightning hidden" id="heat-lightning"></div>
+                        </div>
+                    </div>
+
+                    <div id="hero-robot" class="hero-robot tier-0">
+                        <div class="robot-glow"></div>
+                        <div class="robot-head">
+                            <div class="robot-visor">
+                                <div class="robot-eyes">
+                                    <div class="eye left"></div>
+                                    <div class="eye right"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="robot-neck"></div>
+                        <div class="robot-body">
+                            <div class="chest-plate">
+                                <div class="core-light"></div>
+                            </div>
+                        </div>
+                        <div class="robot-shoulders"></div>
+                        <div class="robot-arms">
+                            <div class="arm left"><div class="hand"></div></div>
+                            <div class="arm right"><div class="hand"></div></div>
+                        </div>
+                    </div>
+                    
+                    <!-- FLYING DRONES CONTAINER -->
+                    <div id="flying-drones-container"></div>
+                </div>
+
+                <!-- Active Boosts (Bottom Left of Hero Section) -->
+                <div id="active-boosts-container" class="boosts-container"></div>
+            </div>
+
+            <!-- Upgrades Panel (Moved to Right) -->
+            <div class="side-panel">
+                <div class="panel-header">
+                    <div class="tab-container">
+                        <button id="tab-upgrades" class="panel-tab active" onclick="game.switchTab('upgrades')">UPGRADES</button>
+                        <button id="tab-tasks" class="panel-tab" onclick="game.switchTab('tasks')">
+                            TASKS
+                            <div id="tasks-badge" class="notification-badge hidden" style="top: -5px; right: -5px; width: 20px; height: 20px; font-size: 0.7rem;">!</div>
+                        </button>
+                        <button id="tab-gems" class="panel-tab" onclick="game.switchTab('gems')" style="color: #9b59b6;">SHOP</button>
+                    </div>
+                </div>
+                <div id="upgrades-container" class="scrollable-content">
+                    <!-- Upgrades injected by JS -->
+                </div>
+                <div id="tasks-container" class="scrollable-content hidden">
+                    <!-- Tasks injected by JS -->
+                </div>
+                <div id="gems-container" class="scrollable-content hidden">
+                    <!-- Gem Shop injected by JS -->
+                </div>
+                
+                <!-- Rebirth Button Area -->
+                <button id="open-rebirth-btn" class="rebirth-trigger-btn">
+                    <i class="fa-solid fa-arrows-rotate"></i> REBIRTH
+                </button>
+            </div>
+        </div>
+        </div>
+
+        <!-- Bonus Drawer (Left Sidebar) -->
+    <div id="bonus-drawer" class="bonus-drawer">
+        <div id="bonus-btn" class="drawer-handle">
+            <div id="bonus-badge" class="notification-badge hidden">!</div>
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="drawer-header">
+            <h2 class="drawer-title-text">POWER UPS</h2>
+            <button id="close-bonus-btn" class="close-modal-btn">×</button>
+        </div>
+        
+        <div class="bonus-list">
+            <div id="card-turbo" class="bonus-card">
+                <div class="best-value-badge">HOT!</div>
+                <div class="bonus-icon pwr-turbo-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                <div class="bonus-info">
+                    <div class="bonus-title">Turbo Surge</div>
+                    <div class="bonus-desc">3x Income (60s)</div>
+                </div>
+                <div class="bonus-action">
+                    <button class="bonus-btn" data-ad-type="turbo" onclick="game.watchAd('turbo')">
+                        <span><i class="fa-solid fa-fire-flame-curved"></i> CLAIM</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="card-auto" class="bonus-card">
+                <div class="bonus-icon pwr-auto-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                <div class="bonus-info">
+                    <div class="bonus-title">Overclock</div>
+                    <div class="bonus-desc">10x Drone Speed (30s)</div>
+                </div>
+                <div class="bonus-action">
+                    <button class="bonus-btn" data-ad-type="auto" onclick="game.watchAd('auto')">
+                        <span><i class="fa-solid fa-gauge-high"></i> CLAIM</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="card-swarm" class="bonus-card">
+                <div class="bonus-icon pwr-swarm-icon"><i class="fa-solid fa-robot"></i></div>
+                <div class="bonus-info">
+                    <div class="bonus-title">Bot Swarm</div>
+                    <div class="bonus-desc">Auto Clicks (30s)</div>
+                </div>
+                <div class="bonus-action">
+                    <button class="bonus-btn" data-ad-type="auto_clicker" onclick="game.watchAd('auto_clicker')">
+                        <span><i class="fa-solid fa-robot"></i> CLAIM</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- BANNER AD REMOVED -->
+        </div>
+    </div>
+
+    <!-- Sliding Ad Banner Removed -->
+
+    <!-- Daily Rewards Drawer Removed (Moved to Modal) -->
+    
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        
+        <!-- Daily Rewards Modal -->
+        <div id="daily-rewards-modal" class="game-modal daily-compact hidden">
+            <div class="modal-header">
+                <h2 class="drawer-title-daily">DAILY REWARDS</h2>
+                <button class="close-modal-btn" data-target="daily-rewards-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="daily-streak-grid" class="daily-list-landscape">
+                    <!-- Injected by JS -->
+                </div>
+                <button id="claim-daily-btn" class="claim-daily-main-btn" disabled style="width:100%; margin-top:15px;">
+                    <i class="fa-solid fa-gift"></i> <span>CLAIM REWARD</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Rebirth Modal -->
+        <div id="rebirth-modal" class="game-modal wide-modal rebirth-theme hidden">
+            <div class="modal-header">
+                <h2>REBIRTH SYSTEM</h2>
+                <button class="close-modal-btn" data-target="rebirth-modal">×</button>
+            </div>
+            <div class="modal-body rebirth-body-landscape">
+                <div class="rebirth-visual-section">
+                    <div class="rebirth-icon-large"><i class="fa-solid fa-infinity"></i></div>
+                    <div class="rebirth-arrows-anim">
+                        <i class="fa-solid fa-angles-up"></i>
+                    </div>
+                </div>
+                
+                <div class="rebirth-content-section">
+                    <div class="rebirth-comparison-box">
+                        <div class="rebirth-stat-col">
+                            <div class="r-label">CURRENT</div>
+                            <div class="r-value current-mult">1x</div>
+                        </div>
+                        <div class="rebirth-arrow-divider">
+                            <i class="fa-solid fa-arrow-right-long"></i>
+                        </div>
+                        <div class="rebirth-stat-col">
+                            <div class="r-label">NEW</div>
+                            <div class="r-value new-mult">2x</div>
+                        </div>
+                    </div>
+                    
+                    <div class="rebirth-info-text">
+                        <div class="info-pill keep"><i class="fa-solid fa-check"></i> KEEP GEMS & ACHIEVEMENTS</div>
+                        <div class="info-pill lose"><i class="fa-solid fa-xmark"></i> RESET MONEY & UPGRADES</div>
+                    </div>
+
+                    <div class="rebirth-cost-box">
+                        <span class="rebirth-cost-display">Cost: $1M</span>
+                    </div>
+
+                    <button id="confirm-rebirth-btn" class="rebirth-btn-action">
+                        REBIRTH NOW (2X)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Settings -->
+        <div id="settings-modal" class="game-modal hidden">
+            <div class="modal-header">
+                <h2>SETTINGS</h2>
+                <button class="close-modal-btn" data-target="settings-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <div class="setting-label">Sound Effects</div>
+                        <input type="range" id="setting-sfx" class="range-slider" min="0" max="100" value="100">
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label">Music Volume</div>
+                        <input type="range" id="setting-music" class="range-slider" min="0" max="100" value="50">
+                    </div>
+                    
+                    <button id="hard-reset-btn" class="danger-btn" style="margin-top:20px;">
+                        RESET GAME PROGRESS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        
+    <!-- Confirm Reset -->
+        <div id="confirm-modal" class="game-modal hidden">
+             <div class="modal-header">
+                <h2>ARE YOU SURE?</h2>
+            </div>
+            <div class="modal-body confirm-modal-body">
+                <div class="confirm-text">This will wipe all progress!</div>
+                <div class="confirm-actions">
+                    <button id="confirm-no-btn" class="confirm-btn btn-no">CANCEL</button>
+                    <button id="confirm-yes-btn" class="confirm-btn btn-yes">RESET GAME</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Robot Index -->
+        <div id="index-modal" class="game-modal wide-modal hidden">
+            <div class="modal-header">
+                <h2>ROBOT INDEX</h2>
+                <button class="close-modal-btn" data-target="index-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="robot-index-grid" class="index-grid">
+                    <!-- Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolution Success Modal -->
+        <div id="evolution-modal" class="game-modal evolution-theme hidden">
+            <div class="evo-ray-bg"></div>
+            <div class="modal-body evo-body-landscape">
+                <div class="evo-visual-section">
+                    <div class="evo-new-robot">
+                        <!-- Injected Robot HTML -->
+                    </div>
+                    <!-- Confetti Container -->
+                    <div class="confetti-container">
+                        <div class="confetti" style="left: 10%; animation-delay: 0s;"></div>
+                        <div class="confetti" style="left: 30%; animation-delay: 1s;"></div>
+                        <div class="confetti" style="left: 50%; animation-delay: 0.5s;"></div>
+                        <div class="confetti" style="left: 70%; animation-delay: 1.5s;"></div>
+                        <div class="confetti" style="left: 90%; animation-delay: 0.2s;"></div>
+                    </div>
+                </div>
+                <div class="evo-info-section">
+                    <h3 class="evo-title-landscape">EVOLUTION COMPLETE!</h3>
+                    <div class="evo-name-box-landscape">
+                        <div class="evo-tier-label">NEW FORM ACQUIRED</div>
+                        <div id="evo-new-name" class="evo-new-name">NANO SCOUT</div>
+                    </div>
+                    
+                    <div class="evo-stat-landscape">
+                        <span class="stat-label">MULTIPLIER:</span>
+                        <span id="evo-mult-val" class="stat-val">x2</span>
+                    </div>
+                    
+                    <button id="evo-claim-btn" class="evo-claim-btn-landscape">
+                        <i class="fa-solid fa-check-double"></i> AWESOME!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offline Earnings Modal -->
+        <div id="offline-modal" class="game-modal hidden">
+            <div class="modal-header">
+                <h2>WELCOME BACK!</h2>
+                <button class="close-modal-btn" data-target="offline-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Your robots were working while you were away.</p>
+                <div style="margin: 20px 0;">
+                    <div style="font-size: 0.9rem; color: #777;">TIME AWAY</div>
+                    <div id="offline-time" style="font-size: 1.5rem; font-weight: 900; color: var(--dark);">2h 15m</div>
+                </div>
+                <div style="margin: 20px 0;">
+                    <div style="font-size: 0.9rem; color: #777;">EARNINGS</div>
+                    <div id="offline-earnings" style="font-size: 2.5rem; font-weight: 900; color: var(--success);">$1.5M</div>
+                </div>
+                
+                <button id="claim-offline-btn" class="action-btn" style="width:100%; margin-bottom: 10px;">
+                    COLLECT CASH
+                </button>
+                <button id="claim-offline-2x-btn" class="bonus-btn" style="width:100%; justify-content:center; background:#8e44ad; border-color:#fff;">
+                    <span><i class="fa-solid fa-bolt"></i> DOUBLE IT! (FREE)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playtime Rewards Drawer -->
+    <div id="playtime-rewards-modal" class="playtime-drawer">
+        <!-- Handle (Slide out button) -->
+        <div id="playtime-reward-btn" class="playtime-drawer-handle">
+            <div id="playtime-badge" class="reward-badge hidden">0</div>
+            <i class="fa-solid fa-gift"></i>
+        </div>
+
+        <div class="drawer-header">
+            <h2 class="drawer-title-text">PLAYTIME REWARDS</h2>
+            <button id="close-playtime-btn" class="close-modal-btn">×</button>
+        </div>
+        <div class="drawer-body">
+            <div id="playtime-rewards-grid" class="playtime-list">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Reward Button Moved to HUD -->
+    
+    <!-- BOSS BATTLE OVERLAY -->
+    <div id="boss-battle-overlay" class="modal-overlay hidden">
+        <div class="boss-bg">
+            <div class="boss-grid"></div>
+        </div>
+
+        <div class="boss-header">
+            <div class="boss-stats-top">
+                <div class="boss-stat-item">
+                    <span class="boss-stat-label">BOT LEVEL</span>
+                    <span id="boss-level">1</span>
+                </div>
+                <div class="boss-damage-header">
+                    <div class="boss-damage-item">
+                        <i class="fa-solid fa-hand-fist"></i> Damage: <span id="boss-click-damage">1</span>
+                    </div>
+                    <div class="boss-damage-item rec-damage">
+                        <i class="fa-solid fa-bullseye"></i> Recommended: <span id="boss-rec-damage">1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="boss-main-area">
+            <button id="close-boss-btn" class="close-modal-btn boss-close-center">×</button>
+            <div id="boss-container" class="boss-container">
+                <!-- Boss HP Bar moved here to be over the boss -->
+                <div class="boss-hp-container">
+                    <div class="boss-hp-bar">
+                        <div id="boss-hp-fill" class="boss-hp-fill"></div>
+                    </div>
+                    <div class="boss-hp-text"><span id="boss-hp-current">100</span> / <span id="boss-hp-max">100</span> HP</div>
+                </div>
+
+                <div id="boss-robot" class="boss-robot">
+                    <div class="boss-glow"></div>
+                    <div class="boss-head critical-section" data-mult="1.1">
+                        <div class="boss-eyes">
+                            <div class="boss-eye left critical-section" data-mult="1.2"></div>
+                            <div class="boss-eye right critical-section" data-mult="1.2"></div>
+                        </div>
+                    </div>
+                    <div class="boss-body">
+                        <div class="boss-core critical-section" data-mult="1.5"></div>
+                    </div>
+                    <div class="boss-arms">
+                        <div class="boss-arm left critical-section" data-mult="1.05"></div>
+                        <div class="boss-arm right critical-section" data-mult="1.05"></div>
+                    </div>
+                </div>
+                <div id="critical-targets"></div>
+                <div id="laser-container"></div>
+            </div>
+
+            <div class="boss-upgrades-panel">
+                <h3 class="upgrades-title">BOSS UPGRADES</h3>
+                <div class="boss-upgrade-list">
+                    <!-- Damage -->
+                    <div class="boss-upgrade-card" id="upgrade-boss-damage">
+                        <div class="upgrade-icon damage-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Increase Damage</div>
+                            <div class="upgrade-desc">Increases Click damage.</div>
+                            <div class="upgrade-cost">Money: <span id="boss-damage-cost">$1,000</span></div>
+                        </div>
+                        <button class="boss-buy-btn" onclick="game.buyBossUpgrade('damage')">BUY</button>
+                    </div>
+                    <!-- Auto Shoot -->
+                    <div class="boss-upgrade-card" id="upgrade-boss-auto">
+                        <div class="upgrade-icon auto-icon"><i class="fa-solid fa-gun"></i></div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Auto shoot</div>
+                            <div class="upgrade-desc">Auto shoots lasers at boss.</div>
+                            <div class="upgrade-cost">Money: <span id="boss-auto-cost">$1,000</span></div>
+                        </div>
+                        <button class="boss-buy-btn" onclick="game.buyBossUpgrade('auto')">BUY</button>
+                    </div>
+                    <!-- Critical Strike (Moved to bottom) -->
+                    <div class="boss-upgrade-card" id="upgrade-boss-crit">
+                        <div class="upgrade-icon crit-icon"><i class="fa-solid fa-star"></i></div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Critical Strike</div>
+                            <div class="upgrade-desc">Chance for 2x damage.</div>
+                            <div class="upgrade-cost">Money: <span id="boss-crit-cost">$1,000</span></div>
+                        </div>
+                        <button class="boss-buy-btn" onclick="game.buyBossUpgrade('crit')">BUY</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="js/gd-sdk.js"></script>
+
+    <!-- GameDistribution SDK -->
+    <script>
+        window.GD_OPTIONS = {
+            gameId: "YOUR_GAME_ID_HERE",
+            advertisementSettings: {
+                autoplay: false
+            },
+            onEvent: function(event) {
+                switch (event.name) {
+                    case "SDK_READY":
+                        console.log("GD SDK Ready");
+                        window.GD_SDK_READY = true;
+                        break;
+
+                    case "SDK_GAME_START":
+                        console.log("Resume game requested");
+                        if (window.resumeGame) window.resumeGame();
+                        break;
+
+                    case "SDK_GAME_PAUSE":
+                        console.log("Pause game requested");
+                        if (window.pauseGame) window.pauseGame();
+                        break;
+
+                    case "SDK_REWARDED_WATCH_COMPLETE":
+                        console.log("Reward earned");
+                        if (window.__gd_reward_callback)
+                            window.__gd_reward_callback(true);
+                        break;
+
+                    case "SDK_REWARDED_WATCH_CANCELED":
+                        console.log("Reward canceled");
+                        if (window.__gd_reward_callback)
+                            window.__gd_reward_callback(false);
+                        break;
+
+                    case "SDK_GDPR_TRACKING":
+                        console.log("GDPR tracking:", event);
+                        break;
+
+                    case "SDK_GDPR_TARGETING":
+                        console.log("GDPR targeting:", event);
+                        break;
+                }
+            }
+        };
+
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://html5.api.gamedistribution.com/main.min.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, "script", "gamedistribution-jssdk"));
+    </script>
+</body>
+</html>
